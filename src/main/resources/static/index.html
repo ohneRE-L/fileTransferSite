@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Transfer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<h1>Upload File</h1>
+<form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" id="fileInput" name="file" required>
+    <input type="number" id="expirationInput" name="expirationMinutes" placeholder="Expiration (minutes, optional)">
+    <button type="submit">Upload</button>
+</form>
+<div id="result"></div>
+<div id="qrcode"></div>
+
+<script>
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData();
+        formData.append('file', document.getElementById('fileInput').files[0]);
+        const expiration = document.getElementById('expirationInput').value;
+        if (expiration) formData.append('expirationMinutes', expiration);
+
+        const response = await fetch('/upload', {
+            method: 'POST',
+            body: formData
+        });
+
+        const link = await response.text();
+        const fullLink = window.location.origin + link;
+        document.getElementById('result').innerHTML = `Download link: <a href="${fullLink}">${fullLink}</a>`;
+
+        new QRCode(document.getElementById('qrcode'), {
+            text: fullLink,
+            width: 128,
+            height: 128
+        });
+    });
+</script>
+</body>
+</html>
